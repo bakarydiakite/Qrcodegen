@@ -1,0 +1,133 @@
+{% extends 'cryptage/admin/base.html' %}
+
+{% block title %}Détails de la Carte - Administration CJP{% endblock %}
+{% block page_title %}Détails de la Carte{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Informations de la carte -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> Informations
+            </div>
+            <div class="card-body">
+                <h5>Membre</h5>
+                <p>
+                    <strong>{{ carte.membre.prenom }} {{ carte.membre.nom }}</strong><br>
+                    <small class="text-muted">{{ carte.membre.email }}</small>
+                </p>
+
+                <hr>
+
+                <h5>Département</h5>
+                <p>{{ carte.membre.departement }}</p>
+
+                <hr>
+
+                <h5>Template Utilisé</h5>
+                <p>
+                    {% if carte.template_utilise %}
+                    <span class="badge badge-custom">{{ carte.template_utilise.nom }}</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Aucun</span>
+                    {% endif %}
+                </p>
+
+                <hr>
+
+                <h5>Date de Génération</h5>
+                <p><i class="far fa-clock"></i> {{ carte.date_generation|date:"d/m/Y à H:i" }}</p>
+
+                <hr>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'download_card' carte.id %}" class="btn btn-success btn-block mb-2">
+                        <i class="fas fa-download"></i> Télécharger le PDF
+                    </a>
+                    <a href="{% url 'regenerate_card' carte.membre.id %}" class="btn btn-warning btn-block">
+                        <i class="fas fa-sync"></i> Régénérer la Carte
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aperçus de la carte -->
+    <div class="col-md-8">
+        <!-- QR Code -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <i class="fas fa-qrcode"></i> QR Code
+            </div>
+            <div class="card-body text-center">
+                {% if carte.qr_code %}
+                <img src="{{ carte.qr_code.url }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
+                <p class="mt-2">
+                    <a href="{{ carte.qr_code.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt"></i> Ouvrir en grand
+                    </a>
+                </p>
+                {% else %}
+                <p class="text-muted">QR Code non disponible</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Carte Recto -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <i class="fas fa-id-card"></i> Carte Recto
+            </div>
+            <div class="card-body text-center">
+                {% if carte.carte_recto %}
+                <img src="{{ carte.carte_recto.url }}" alt="Carte Recto" class="img-fluid"
+                    style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                <p class="mt-2">
+                    <a href="{{ carte.carte_recto.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt"></i> Ouvrir en grand
+                    </a>
+                    <a href="{{ carte.carte_recto.url }}" download class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-download"></i> Télécharger PNG
+                    </a>
+                </p>
+                {% else %}
+                <p class="text-muted">Carte recto non disponible</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Carte Verso -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <i class="fas fa-id-card"></i> Carte Verso
+            </div>
+            <div class="card-body text-center">
+                {% if carte.carte_verso %}
+                <img src="{{ carte.carte_verso.url }}" alt="Carte Verso" class="img-fluid"
+                    style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                <p class="mt-2">
+                    <a href="{{ carte.carte_verso.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt"></i> Ouvrir en grand
+                    </a>
+                    <a href="{{ carte.carte_verso.url }}" download class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-download"></i> Télécharger PNG
+                    </a>
+                </p>
+                {% else %}
+                <p class="text-muted">Carte verso non disponible</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'admin_cartes_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+    <a href="{% url 'admin_membre_detail' carte.membre.id %}" class="btn btn-info">
+        <i class="fas fa-user"></i> Voir le Membre
+    </a>
+</div>
+{% endblock %}

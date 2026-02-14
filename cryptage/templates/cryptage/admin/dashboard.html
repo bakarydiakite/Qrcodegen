@@ -1,0 +1,184 @@
+{% extends 'cryptage/admin/base.html' %}
+
+{% block title %}Dashboard - Administration CJP{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Statistiques -->
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="icon text-primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>{{ total_membres }}</h3>
+            <p>Membres</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="icon text-success">
+                <i class="fas fa-building"></i>
+            </div>
+            <h3>{{ total_departements }}</h3>
+            <p>Départements</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="icon text-warning">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <h3>{{ total_cartes }}</h3>
+            <p>Cartes Générées</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="icon text-info">
+                <i class="fas fa-id-card-alt"></i>
+            </div>
+            <h3>{{ total_templates }}</h3>
+            <p>Templates</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Dernières cartes générées -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> Dernières Cartes Générées
+            </div>
+            <div class="card-body">
+                {% if dernieres_cartes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Membre</th>
+                                <th>Template</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for carte in dernieres_cartes %}
+                            <tr>
+                                <td>
+                                    <strong>{{ carte.membre.prenom }} {{ carte.membre.nom }}</strong><br>
+                                    <small class="text-muted">{{ carte.membre.departement }}</small>
+                                </td>
+                                <td>
+                                    {% if carte.template_utilise %}
+                                    <span class="badge badge-custom">{{ carte.template_utilise.nom }}</span>
+                                    {% else %}
+                                    <span class="badge badge-secondary">Aucun</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ carte.date_generation|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'preview_card' carte.id %}" class="btn btn-sm btn-info"
+                                        title="Prévisualiser">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'download_card' carte.id %}" class="btn btn-sm btn-success"
+                                        title="Télécharger">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'admin_cartes_list' %}" class="btn btn-outline-primary">
+                        Voir toutes les cartes <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">Aucune carte générée pour le moment</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Membres par département -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i> Membres par Département
+            </div>
+            <div class="card-body">
+                {% if membres_par_dept %}
+                <ul class="list-group list-group-flush">
+                    {% for dept in membres_par_dept %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ dept.nom_depart }}
+                        <span class="badge badge-custom badge-pill">{{ dept.nombre_membres }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted text-center">Aucun département</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Activité récente -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i> Activité (7 derniers jours)
+            </div>
+            <div class="card-body text-center">
+                <h2 class="text-primary">{{ cartes_semaine }}</h2>
+                <p class="text-muted mb-0">Cartes générées</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> Actions Rapides
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <a href="{% url 'admin_membre_add' %}" class="btn btn-lg btn-outline-primary btn-block">
+                            <i class="fas fa-user-plus"></i><br>
+                            Ajouter un Membre
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'admin_departement_add' %}" class="btn btn-lg btn-outline-success btn-block">
+                            <i class="fas fa-building"></i><br>
+                            Ajouter un Département
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'upload_template' %}" class="btn btn-lg btn-outline-warning btn-block">
+                            <i class="fas fa-upload"></i><br>
+                            Nouveau Template
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'home' %}" class="btn btn-lg btn-outline-info btn-block">
+                            <i class="fas fa-qrcode"></i><br>
+                            Générer une Carte
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

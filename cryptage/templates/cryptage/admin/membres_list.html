@@ -1,0 +1,123 @@
+{% extends 'cryptage/admin/base.html' %}
+
+{% block title %}Gestion des Membres - Administration CJP{% endblock %}
+{% block page_title %}Gestion des Membres{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-users"></i> Liste des Membres</span>
+        <a href="{% url 'admin_membre_add' %}" class="btn btn-light btn-sm">
+            <i class="fas fa-plus"></i> Nouveau Membre
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Filtres et recherche -->
+        <form method="get" class="mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control"
+                            placeholder="Rechercher par nom, prénom ou email..." value="{{ search }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Rechercher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="departement" class="form-control" onchange="this.form.submit()">
+                        <option value="">Tous les départements</option>
+                        {% for dept in departements %}
+                        <option value="{{ dept.id }}" {% if dept_filter==dept.id|stringformat:"s" %}selected{% endif %}>
+                            {{ dept.nom_depart }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    {% if search or dept_filter %}
+                    <a href="{% url 'admin_membres_list' %}" class="btn btn-secondary btn-block">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        <!-- Table des membres -->
+        {% if membres %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Nom Complet</th>
+                        <th>Département</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Profession</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for membre in membres %}
+                    <tr>
+                        <td>
+                            {% if membre.photo %}
+                            <img src="{{ membre.photo.url }}" alt="{{ membre.prenom }}"
+                                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                            <div
+                                style="width: 40px; height: 40px; border-radius: 50%; background-color: #e38f28; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                {{ membre.prenom.0 }}{{ membre.nom.0 }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ membre.prenom }} {{ membre.nom }}</strong>
+                        </td>
+                        <td>{{ membre.departement }}</td>
+                        <td>{{ membre.email }}</td>
+                        <td>{{ membre.telephone }}</td>
+                        <td>{{ membre.profession }}</td>
+                        <td>
+                            <a href="{% url 'admin_membre_edit' membre.id %}" class="btn btn-sm btn-warning"
+                                title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'regenerate_card' membre.id %}" class="btn btn-sm btn-info"
+                                title="Générer une carte">
+                                <i class="fas fa-qrcode"></i>
+                            </a>
+                            <button class="btn btn-sm btn-danger"
+                                onclick="confirmDelete({{ membre.id }}, '{{ membre.prenom }} {{ membre.nom }}')"
+                                title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted mt-3">Total: {{ membres.count }} membre(s)</p>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucun membre trouvé.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(membreId, membreNom) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer le membre "' + membreNom + '" ?\n\nCette action est irréversible !')) {
+            window.location.href = '{% url "admin_membre_delete" 0 %}'.replace('0', membreId);
+        }
+    }
+</script>
+{% endblock %}

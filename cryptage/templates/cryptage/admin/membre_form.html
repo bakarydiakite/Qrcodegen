@@ -1,0 +1,97 @@
+{% extends 'cryptage/admin/base.html' %}
+
+{% block title %}{% if edit_mode %}Modifier{% else %}Ajouter{% endif %} un Membre - Administration CJP{% endblock %}
+{% block page_title %}{% if edit_mode %}Modifier{% else %}Ajouter{% endif %} un Membre{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-edit"></i> {% if edit_mode %}Modifier le membre{% else %}Nouveau membre{% endif %}
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="prenom">Prénom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="prenom" name="prenom"
+                                    value="{% if edit_mode %}{{ membre.prenom }}{% endif %}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nom">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nom" name="nom"
+                                    value="{% if edit_mode %}{{ membre.nom }}{% endif %}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="departement">Département <span class="text-danger">*</span></label>
+                        <select class="form-control" id="departement" name="departement" required>
+                            <option value="">Sélectionner un département</option>
+                            {% for dept in departements %}
+                            <option value="{{ dept.id }}" {% if edit_mode and membre.departement.id==dept.id
+                                %}selected{% endif %}>
+                                {{ dept.nom_depart }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                    value="{% if edit_mode %}{{ membre.email }}{% endif %}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="telephone">Téléphone <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="telephone" name="telephone"
+                                    value="{% if edit_mode %}{{ membre.telephone }}{% endif %}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profession">Profession <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="profession" name="profession"
+                            value="{% if edit_mode %}{{ membre.profession }}{% endif %}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photo">Photo du membre (optionnel)</label>
+                        {% if edit_mode and membre.photo %}
+                        <div class="mb-2">
+                            <img src="{{ membre.photo.url }}" alt="{{ membre.prenom }}"
+                                style="max-width: 150px; border-radius: 10px;">
+                        </div>
+                        {% endif %}
+                        <input type="file" class="form-control-file" id="photo" name="photo" accept="image/*">
+                        <small class="form-text text-muted">Format recommandé: JPG ou PNG, taille maximale 5MB</small>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'admin_membres_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {% if edit_mode %}Modifier{% else %}Ajouter{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

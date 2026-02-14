@@ -1,0 +1,109 @@
+{% extends 'cryptage/admin/base.html' %}
+
+{% block title %}Cartes Générées - Administration CJP{% endblock %}
+{% block page_title %}Cartes Générées{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-qrcode"></i> Liste des Cartes Générées
+    </div>
+    <div class="card-body">
+        <!-- Filtres -->
+        <form method="get" class="mb-4">
+            <div class="row">
+                <div class="col-md-5">
+                    <select name="membre" class="form-control" onchange="this.form.submit()">
+                        <option value="">Tous les membres</option>
+                        {% for m in membres %}
+                        <option value="{{ m.id }}" {% if membre_filter==m.id|stringformat:"s" %}selected{% endif %}>
+                            {{ m.prenom }} {{ m.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <select name="template" class="form-control" onchange="this.form.submit()">
+                        <option value="">Tous les templates</option>
+                        {% for t in templates %}
+                        <option value="{{ t.id }}" {% if template_filter==t.id|stringformat:"s" %}selected{% endif %}>
+                            {{ t.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    {% if membre_filter or template_filter %}
+                    <a href="{% url 'admin_cartes_list' %}" class="btn btn-secondary btn-block">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        <!-- Table des cartes -->
+        {% if cartes %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Aperçu</th>
+                        <th>Membre</th>
+                        <th>Département</th>
+                        <th>Template</th>
+                        <th>Date de Génération</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for carte in cartes %}
+                    <tr>
+                        <td>
+                            {% if carte.qr_code %}
+                            <img src="{{ carte.qr_code.url }}" alt="QR Code" style="width: 50px; height: 50px;">
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ carte.membre.prenom }} {{ carte.membre.nom }}</strong><br>
+                            <small class="text-muted">{{ carte.membre.email }}</small>
+                        </td>
+                        <td>{{ carte.membre.departement }}</td>
+                        <td>
+                            {% if carte.template_utilise %}
+                            <span class="badge badge-custom">{{ carte.template_utilise.nom }}</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Aucun</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ carte.date_generation|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'preview_card' carte.id %}" class="btn btn-sm btn-info"
+                                title="Prévisualiser">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'download_card' carte.id %}" class="btn btn-sm btn-success"
+                                title="Télécharger PDF">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            {% if carte.carte_recto %}
+                            <a href="{{ carte.carte_recto.url }}" target="_blank" class="btn btn-sm btn-primary"
+                                title="Voir Recto">
+                                <i class="fas fa-image"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted mt-3">Total: {{ cartes.count }} carte(s) générée(s)</p>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucune carte générée pour le moment.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

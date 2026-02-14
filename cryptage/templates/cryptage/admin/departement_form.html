@@ -1,0 +1,41 @@
+{% extends 'cryptage/admin/base.html' %}
+
+{% block title %}{% if edit_mode %}Modifier{% else %}Ajouter{% endif %} un Département - Administration CJP{% endblock
+%}
+{% block page_title %}{% if edit_mode %}Modifier{% else %}Ajouter{% endif %} un Département{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-building"></i> {% if edit_mode %}Modifier le département{% else %}Nouveau département{%
+                endif %}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="nom_depart">Nom du Département <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nom_depart" name="nom_depart"
+                            value="{% if edit_mode %}{{ departement.nom_depart }}{% endif %}" required
+                            placeholder="Ex: Informatique, Marketing, etc.">
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'admin_departements_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {% if edit_mode %}Modifier{% else %}Ajouter{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

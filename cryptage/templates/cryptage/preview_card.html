@@ -1,0 +1,120 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prévisualisation de la Carte</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .card-preview {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            max-width: 100%;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .member-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card-preview">
+            <h2 class="text-center mb-4">Prévisualisation de la Carte de Membre</h2>
+
+            <div class="row">
+                <!-- Carte Recto -->
+                <div class="col-md-6 text-center">
+                    <h4>Recto</h4>
+                    {% if stock.carte_recto %}
+                    <img src="{{ stock.carte_recto.url }}" alt="Carte Recto" class="card-image">
+                    {% else %}
+                    <p class="text-muted">Image non disponible</p>
+                    {% endif %}
+                </div>
+
+                <!-- Carte Verso -->
+                <div class="col-md-6 text-center">
+                    <h4>Verso (avec QR Code)</h4>
+                    {% if stock.carte_verso %}
+                    <img src="{{ stock.carte_verso.url }}" alt="Carte Verso" class="card-image">
+                    {% else %}
+                    <p class="text-muted">Image non disponible</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informations du membre -->
+            <div class="member-info">
+                <h4>Informations du Membre</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nom:</strong> {{ membre.nom }}</p>
+                        <p><strong>Prénom:</strong> {{ membre.prenom }}</p>
+                        <p><strong>Département:</strong> {{ membre.departement }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong> {{ membre.email }}</p>
+                        <p><strong>Téléphone:</strong> {{ membre.telephone }}</p>
+                        <p><strong>Profession:</strong> {{ membre.profession }}</p>
+                    </div>
+                </div>
+                <p class="mt-3"><strong>Date de génération:</strong> {{ stock.date_generation|date:"d/m/Y à H:i" }}</p>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="text-center mt-4">
+                {% if stock.carte_pdf %}
+                <a href="{% url 'download_card' stock.id %}" class="btn btn-success btn-lg">
+                    <i class="fas fa-download"></i> Télécharger la carte (PDF)
+                </a>
+                {% endif %}
+
+                <a href="{% url 'list' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+
+                <a href="{% url 'regenerate_card' membre.id %}" class="btn btn-warning btn-lg"
+                    onclick="return confirm('Voulez-vous régénérer cette carte?')">
+                    <i class="fas fa-redo"></i> Régénérer
+                </a>
+            </div>
+
+            <!-- QR Code seul (optionnel) -->
+            {% if stock.qr_code %}
+            <div class="text-center mt-4">
+                <h5>QR Code seul</h5>
+                <img src="{{ stock.qr_code.url }}" alt="QR Code"
+                    style="max-width: 300px; border: 2px solid #ddd; border-radius: 8px;">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>
