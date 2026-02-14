@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^p@9849_1n*1!v)*g#tfxsp*&)2hgm0=a@%k#i&w!8+*rm3!s2'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-^p@9849_1n*1!v)*g#tfxsp*&)2hgm0=a@%k#i&w!8+*rm3!s2')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -48,8 +51,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Must be at the top
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # For serving static files in production
+    'corsheaders.middleware.CorsMiddleware',  # Must be before CommonMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,16 +86,27 @@ WSGI_APPLICATION = 'generateur.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cjp_cards_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+if config('DATABASE_URL', default=None):
+    # Production: use DATABASE_URL from environment
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Development: use local PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'cjp_cards_db',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 
 # Password validation
@@ -128,16 +143,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS =[
+STATICFILES_DIRS = [
     BASE_DIR / "static",
-
 ]
 
-MEDIA_URL='media/'
+# WhiteNoise configuration for serving static files in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_ROOT='media'
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -194,18 +212,17 @@ SIMPLE_JWT = {
 # CORS CONFIGURATION
 # ============================================
 
-# Allow requests from React frontend
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
-    "http://localhost:3000",  # Alternative React port
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:3000",
-]
+# CORS Configuration - Dynamic based on environment
+CORS_ALLOWED_ORIGINS_STR = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000'
+)
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS_STR.split(',')]
 
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 
-# Allow all headers for development
+# Allow all headers
 CORS_ALLOW_ALL_HEADERS = True
 
 # Methods allowed
@@ -218,6 +235,15 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
-# For development, allow all origins (comment out in production)
-# CORS_ALLOW_ALL_ORIGINS = True
+# Security settings for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
