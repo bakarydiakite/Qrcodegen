@@ -4,7 +4,7 @@
 
 Votre projet dispose maintenant d'une **interface d'administration complète et moderne** qui remplace l'admin Django par défaut.
 
-### 📁 Nouveaux Fichiers Créés
+### Nouveaux Fichiers Créés
 
 **Backend (Python)** :
 - `cryptage/views_admin.py` - Toutes les vues de l'administration
